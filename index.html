@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MRA Clima</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:      #8d9e90;
+  --sage:    #6a8f72;
+  --sage-dk: #445e48;
+  --cream:   #f0ede4;
+  --white:   #fafaf6;
+  --td:      #22261f;
+  --tm:      #445040;
+  --ts:      #7a8878;
+  --cbg:     rgba(242,239,230,0.80);
+  --cbr:     rgba(100,140,108,0.20);
+  --sh:      0 20px 60px rgba(20,34,22,0.18), 0 4px 16px rgba(20,34,22,0.08);
+}
+html, body { width:100%; height:100%; overflow:hidden; }
+body {
+  min-height:100vh; font-family:'DM Sans',sans-serif;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  position:relative;
+  background-color: #8d9e90;
+  background-image:
+    radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(30,42,32,0.28) 100%),
+    radial-gradient(ellipse at 50% 10%, rgba(210,222,205,0.55) 0%, transparent 65%),
+    radial-gradient(ellipse at 5%  45%, rgba(175,200,178,0.30) 0%, transparent 50%),
+    radial-gradient(ellipse at 95% 40%, rgba(155,185,160,0.25) 0%, transparent 50%);
+}
+body::before {
+  content:''; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+  opacity:0.045; mix-blend-mode:overlay;
+}
+.shelf {
+  position:fixed; bottom:0; left:0; right:0; height:38%; z-index:1; pointer-events:none;
+  background: linear-gradient(to top, rgba(62,80,58,0.55) 0%, rgba(88,110,82,0.30) 30%, transparent 100%);
+}
+.mist {
+  position:fixed; bottom:20%; left:50%; transform:translateX(-50%);
+  width:80%; height:22%; z-index:1; pointer-events:none;
+  background: radial-gradient(ellipse at 50% 60%, rgba(235,238,228,0.55) 0%, rgba(210,220,205,0.20) 50%, transparent 75%);
+  filter:blur(28px);
+}
+.spheres { position:fixed; inset:0; z-index:2; pointer-events:none; }
+.sphere {
+  position:absolute; border-radius:50%;
+  background: radial-gradient(circle at 35% 30%, rgba(245,248,242,0.96) 0%, rgba(210,222,208,0.75) 45%, rgba(170,192,172,0.40) 100%);
+  box-shadow: inset -4px -5px 14px rgba(80,110,80,0.22), inset 2px 2px 8px rgba(255,255,255,0.7), 0 8px 28px rgba(30,50,30,0.18);
+}
+.s1{width:82px;height:82px;top:7%;left:9%;animation:bob 7.5s ease-in-out infinite 0s}
+.s2{width:50px;height:50px;top:8%;right:12%;animation:bob 9s ease-in-out infinite 2s}
+.s3{width:34px;height:34px;top:3%;right:28%;animation:bob 6s ease-in-out infinite 1s}
+.s4{width:19px;height:19px;top:17%;left:26%;animation:bob 8s ease-in-out infinite 3.5s}
+.s5{width:26px;height:26px;top:14%;left:48%;animation:bob 7s ease-in-out infinite 1.8s}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(0deg)}40%{transform:translateY(-15px) rotate(4deg)}70%{transform:translateY(-7px) rotate(-2deg)}}
+
+/* UI */
+.ui {
+  position:relative; z-index:10; width:100%; max-width:430px;
+  display:flex; flex-direction:column; gap:13px; padding:24px; margin-bottom:26vh;
+}
+.brand-header{display:flex;align-items:center;gap:10px;padding:0 2px;opacity:0;animation:up .7s ease .1s forwards}
+.brand-logo{height:25px;object-fit:contain;filter:brightness(0) invert(1) drop-shadow(0 1px 4px rgba(0,0,0,0.25))}
+.brand-div{width:1px;height:15px;background:rgba(255,255,255,0.45)}
+.brand-lbl{font-size:10px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,0.75)}
+
+.search-card{
+  background:var(--cbg); backdrop-filter:blur(22px); -webkit-backdrop-filter:blur(22px);
+  border:1px solid var(--cbr); border-radius:17px; padding:5px 5px 5px 17px;
+  display:flex; align-items:center; gap:8px; box-shadow:var(--sh);
+  opacity:0; animation:up .7s ease .2s forwards;
+}
+.si{color:var(--sage);flex-shrink:0}
+.search-input{flex:1;background:none;border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--td);padding:10px 0}
+.search-input::placeholder{color:var(--ts)}
+.search-btn{
+  background:var(--sage-dk);color:var(--white);border:none;border-radius:12px;
+  padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+  cursor:pointer;transition:background .2s,transform .15s;white-space:nowrap;
+}
+.search-btn:hover{background:var(--sage);transform:scale(1.02)}
+.search-btn:active{transform:scale(.97)}
+
+.weather-card{
+  background:var(--cbg); backdrop-filter:blur(26px); -webkit-backdrop-filter:blur(26px);
+  border:1px solid var(--cbr); border-radius:24px; padding:30px;
+  box-shadow:var(--sh); position:relative; overflow:hidden;
+  opacity:0; animation:up .7s ease .3s forwards;
+  min-height:210px; display:flex; flex-direction:column; justify-content:center;
+}
+.weather-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);
+}
+
+.empty-state{text-align:center;padding:10px 0}
+.empty-icon{font-size:36px;display:block;margin-bottom:9px;opacity:.42}
+.empty-text{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;color:var(--tm);line-height:1.4}
+.empty-sub{font-size:12px;color:var(--ts);margin-top:4px}
+
+.loading-state{text-align:center;padding:10px 0}
+.loader{width:30px;height:30px;border:2px solid rgba(100,145,108,.2);border-top-color:var(--sage);border-radius:50%;animation:spin .85s linear infinite;margin:0 auto 9px}
+.loading-text{font-size:12px;color:var(--ts)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.error-state{text-align:center;padding:10px 0}
+.error-icon{font-size:26px;margin-bottom:5px}
+.error-text{font-size:13px;color:#8a5050}
+
+.weather-content{display:none;position:relative;z-index:1}
+.weather-content.visible{display:block;animation:up .45s ease forwards}
+
+.weather-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
+.city-block{flex:1}
+.city-name{font-family:'Cormorant Garamond',serif;font-size:25px;font-weight:400;color:var(--td);line-height:1.1}
+.weather-date{font-size:10px;color:var(--ts);margin-top:3px;letter-spacing:.05em}
+
+/* ── Weather icon — SVG inline, sem bola ── */
+.w-icon {
+  width: 52px; height: 52px; flex-shrink: 0; margin-left: 12px;
+}
+.w-icon svg { width: 100%; height: 100%; }
+
+.weather-main{display:flex;align-items:baseline;gap:5px;margin-bottom:5px}
+.temp-val{font-family:'Cormorant Garamond',serif;font-size:64px;font-weight:300;color:var(--td);line-height:1;letter-spacing:-2px}
+.temp-unit{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:300;color:var(--tm);margin-bottom:5px}
+.cond-text{font-size:13px;color:var(--tm);margin-bottom:18px}
+
+.divider{height:1px;background:linear-gradient(to right,transparent,rgba(100,145,108,.22),transparent);margin-bottom:16px}
+.stats{display:flex}
+.stat{flex:1;text-align:center;position:relative}
+.stat+.stat::before{content:'';position:absolute;left:0;top:10%;height:80%;width:1px;background:rgba(100,145,108,.16)}
+.stat-lbl{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--ts);margin-bottom:2px}
+.stat-val{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:400;color:var(--td)}
+.stat-unit{font-size:9px;color:var(--tm)}
+
+.footer{text-align:center;opacity:0;animation:up .7s ease .45s forwards}
+.footer-text{font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:.06em}
+
+@keyframes up{from{opacity:0;transform:translateY(13px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div class="shelf"></div>
+<div class="mist"></div>
+<div class="spheres">
+  <div class="sphere s1"></div>
+  <div class="sphere s2"></div>
+  <div class="sphere s3"></div>
+  <div class="sphere s4"></div>
+  <div class="sphere s5"></div>
+</div>
+
+<div class="ui">
+
+  <div class="brand-header">
+    <img class="brand-logo" src="https://framerusercontent.com/images/blV1sV3MXYOM9C49nAxAzSo1go.png" alt="MRA"/>
+    <div class="brand-div"></div>
+    <span class="brand-lbl">Previsão do Tempo</span>
+  </div>
+
+  <div class="search-card">
+    <svg class="si" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    <input class="search-input" id="cityInput" type="text" placeholder="Digite uma cidade..." autocomplete="off"/>
+    <button class="search-btn" onclick="fetchWeather()">Consultar</button>
+  </div>
+
+  <div class="weather-card">
+    <div class="empty-state" id="emptyState">
+      <span class="empty-icon">🌿</span>
+      <p class="empty-text">Consulte o clima de qualquer cidade</p>
+      <p class="empty-sub">Digite o nome acima e clique em consultar</p>
+    </div>
+    <div class="loading-state" id="loadingState" style="display:none">
+      <div class="loader"></div>
+      <p class="loading-text">Buscando dados...</p>
+    </div>
+    <div class="error-state" id="errorState" style="display:none">
+      <div class="error-icon">🍂</div>
+      <p class="error-text" id="errorMsg">Cidade não encontrada.</p>
+    </div>
+
+    <div class="weather-content" id="weatherContent">
+      <div class="weather-top">
+        <div class="city-block">
+          <div class="city-name" id="cityName">—</div>
+          <div class="weather-date" id="weatherDate">—</div>
+        </div>
+        <div class="w-icon" id="weatherIcon"></div>
+      </div>
+      <div class="weather-main">
+        <span class="temp-val" id="tempValue">—</span>
+        <span class="temp-unit">°C</span>
+      </div>
+      <div class="cond-text" id="conditionText">—</div>
+      <div class="divider"></div>
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-lbl">Sensação</div>
+          <div class="stat-val" id="feelsLike">—</div>
+          <div class="stat-unit">°C</div>
+        </div>
+        <div class="stat">
+          <div class="stat-lbl">Umidade</div>
+          <div class="stat-val" id="humidity">—</div>
+          <div class="stat-unit">%</div>
+        </div>
+        <div class="stat">
+          <div class="stat-lbl">Atualizado</div>
+          <div class="stat-val" id="updatedAt" style="font-size:12px">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p class="footer-text">© 2025 MRA Holding · Dados via Visual Crossing</p>
+  </div>
+</div>
+
+<script>
+const API = 'http://localhost:3000'
+
+/* SVGs de clima — traço fino, tom sage, sem bola */
+const ICONS = {
+  sunny: `<svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="26" cy="26" r="10" stroke="#4a6e4a" stroke-width="1.8"/>
+    <line x1="26" y1="4"  x2="26" y2="10" stroke="#4a6e4a" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="26" y1="42" x2="26" y2="48" stroke="#4a6e4a" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="4"  y1="26" x2="10" y2="26" stroke="#4a6e4a" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="42" y1="26" x2="48" y2="26" stroke="#4a6e4a" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="10.5" y1="10.5" x2="14.8" y2="14.8" stroke="#4a6e4a" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="37.2" y1="37.2" x2="41.5" y2="41.5" stroke="#4a6e4a" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="41.5" y1="10.5" x2="37.2" y2="14.8" stroke="#4a6e4a" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="14.8" y1="37.2" x2="10.5" y2="41.5" stroke="#4a6e4a" stroke-width="1.8" stroke-linecap="round"/>
+  </svg>`,
+
+  partly: `<svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="20" cy="20" r="9" stroke="#4a6e4a" stroke-width="1.8"/>
+    <line x1="20" y1="5"  x2="20" y2="10" stroke="#4a6e4a" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="8"  y1="20" x2="13" y2="20" stroke="#4a6e4a" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="11" y1="11" x2="14.5" y2="14.5" stroke="#4a6e4a" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="29" y1="11" x2="25.5" y2="14.5" stroke="#4a6e4a" stroke-width="1.8" stroke-linecap="round"/>
+    <path d="M16 33 Q16 27 22 27 Q23 22 29 22 Q36 22 36 29 Q40 29 40 34 Q40 39 35 39 L20 39 Q14 39 14 34 Q14 33 16 33Z"
+          stroke="#4a6e4a" stroke-width="1.8" fill="rgba(242,239,230,0.6)" stroke-linejoin="round"/>
+  </svg>`,
+
+  cloudy: `<svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 36 Q12 29 19 29 Q20 23 27 23 Q35 23 35 30 Q40 30 40 35 Q40 41 34 41 L17 41 Q10 41 10 36 Q10 35 12 36Z"
+          stroke="#4a6e4a" stroke-width="1.8" fill="rgba(242,239,230,0.55)" stroke-linejoin="round"/>
+    <path d="M22 24 Q22 18 28 18 Q29 13 35 13 Q42 13 42 20 Q46 20 46 25 Q46 30 41 30"
+          stroke="#4a6e4a" stroke-width="1.6" fill="none" stroke-linejoin="round" opacity="0.55"/>
+  </svg>`,
+
+  rainy: `<svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M11 30 Q11 23 18 23 Q19 17 26 17 Q34 17 34 24 Q39 24 39 29 Q39 35 33 35 L16 35 Q9 35 9 30 Q9 29 11 30Z"
+          stroke="#4a6e4a" stroke-width="1.8" fill="rgba(242,239,230,0.55)" stroke-linejoin="round"/>
+    <line x1="16" y1="39" x2="14" y2="46" stroke="#4a6e4a" stroke-width="1.6" stroke-linecap="round"/>
+    <line x1="24" y1="39" x2="22" y2="46" stroke="#4a6e4a" stroke-width="1.6" stroke-linecap="round"/>
+    <line x1="32" y1="39" x2="30" y2="46" stroke="#4a6e4a" stroke-width="1.6" stroke-linecap="round"/>
+  </svg>`,
+
+  stormy: `<svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 28 Q10 21 17 21 Q18 15 25 15 Q33 15 33 22 Q38 22 38 27 Q38 33 32 33 L15 33 Q8 33 8 28 Q8 27 10 28Z"
+          stroke="#4a6e4a" stroke-width="1.8" fill="rgba(242,239,230,0.5)" stroke-linejoin="round"/>
+    <polyline points="28,33 22,41 27,41 21,50" stroke="#4a6e4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>`,
+
+  snowy: `<svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 30 Q12 23 19 23 Q20 17 27 17 Q35 17 35 24 Q40 24 40 29 Q40 35 34 35 L17 35 Q10 35 10 30 Q10 29 12 30Z"
+          stroke="#4a6e4a" stroke-width="1.8" fill="rgba(242,239,230,0.55)" stroke-linejoin="round"/>
+    <circle cx="17" cy="42" r="2" stroke="#4a6e4a" stroke-width="1.5" fill="none"/>
+    <circle cx="26" cy="44" r="2" stroke="#4a6e4a" stroke-width="1.5" fill="none"/>
+    <circle cx="35" cy="42" r="2" stroke="#4a6e4a" stroke-width="1.5" fill="none"/>
+  </svg>`,
+
+  foggy: `<svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="10" y1="20" x2="42" y2="20" stroke="#4a6e4a" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="14" y1="27" x2="38" y2="27" stroke="#4a6e4a" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="10" y1="34" x2="42" y2="34" stroke="#4a6e4a" stroke-width="1.8" stroke-linecap="round"/>
+    <line x1="16" y1="41" x2="36" y2="41" stroke="#4a6e4a" stroke-width="1.6" stroke-linecap="round" opacity="0.5"/>
+  </svg>`,
+}
+
+function getIcon(condition) {
+  const c = condition.toLowerCase()
+  if (c.includes('storm') || c.includes('thunder')) return ICONS.stormy
+  if (c.includes('snow'))                            return ICONS.snowy
+  if (c.includes('rain') || c.includes('shower'))   return ICONS.rainy
+  if (c.includes('fog')  || c.includes('mist'))     return ICONS.foggy
+  if (c.includes('overcast'))                        return ICONS.cloudy
+  if (c.includes('cloud') || c.includes('partial')) return ICONS.partly
+  if (c.includes('clear') || c.includes('sunny'))   return ICONS.sunny
+  return ICONS.partly
+}
+
+function setState(state) {
+  document.getElementById('emptyState').style.display   = state==='empty'   ? 'block':'none'
+  document.getElementById('loadingState').style.display = state==='loading' ? 'block':'none'
+  document.getElementById('errorState').style.display   = state==='error'   ? 'block':'none'
+  const c = document.getElementById('weatherContent')
+  if (state==='result') { c.style.display='block'; c.classList.add('visible') }
+  else { c.classList.remove('visible'); c.style.display='none' }
+}
+
+async function fetchWeather() {
+  const city = document.getElementById('cityInput').value.trim()
+  if (!city) return
+  setState('loading')
+  try {
+    const r = await fetch(`${API}/weather/${encodeURIComponent(city)}`)
+    if (!r.ok) throw new Error(r.status===404 ? 'Cidade não encontrada.' : 'Erro ao buscar dados.')
+    const d = await r.json()
+    document.getElementById('cityName').textContent      = d.city
+    document.getElementById('weatherDate').textContent   = new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})
+    document.getElementById('tempValue').textContent     = Math.round(d.temperature)
+    document.getElementById('conditionText').textContent = d.condition
+    document.getElementById('weatherIcon').innerHTML     = getIcon(d.condition)
+    document.getElementById('feelsLike').textContent     = Math.round(d.feelsLike)
+    document.getElementById('humidity').textContent      = d.humidity
+    document.getElementById('updatedAt').textContent     = new Date(d.fetchedAt).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})
+    setState('result')
+  } catch(e) {
+    document.getElementById('errorMsg').textContent = e.message || 'Erro inesperado.'
+    setState('error')
+  }
+}
+
+document.getElementById('cityInput').addEventListener('keydown', e => { if(e.key==='Enter') fetchWeather() })
+</script>
+</body>
+</html>
