@@ -3,9 +3,14 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { WeatherModule } from './weather/weather.module';
 import { ConfigModule } from '@nestjs/config';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), WeatherModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    WeatherModule,
+    RedisModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
